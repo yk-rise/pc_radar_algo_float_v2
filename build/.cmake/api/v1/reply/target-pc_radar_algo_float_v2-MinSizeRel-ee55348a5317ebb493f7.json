@@ -1,0 +1,205 @@
+{
+	"artifacts" : 
+	[
+		{
+			"path" : "MinSizeRel/pc_radar_algo_float_v2.exe"
+		},
+		{
+			"path" : "MinSizeRel/pc_radar_algo_float_v2.pdb"
+		}
+	],
+	"backtrace" : 1,
+	"backtraceGraph" : 
+	{
+		"commands" : 
+		[
+			"add_executable",
+			"target_compile_options",
+			"target_include_directories"
+		],
+		"files" : 
+		[
+			"CMakeLists.txt"
+		],
+		"nodes" : 
+		[
+			{
+				"file" : 0
+			},
+			{
+				"command" : 0,
+				"file" : 0,
+				"line" : 8,
+				"parent" : 0
+			},
+			{
+				"command" : 1,
+				"file" : 0,
+				"line" : 28,
+				"parent" : 0
+			},
+			{
+				"command" : 2,
+				"file" : 0,
+				"line" : 18,
+				"parent" : 0
+			}
+		]
+	},
+	"compileGroups" : 
+	[
+		{
+			"compileCommandFragments" : 
+			[
+				{
+					"fragment" : "/DWIN32 /D_WINDOWS /O1 /Ob1 /DNDEBUG -std:c11 -MD"
+				},
+				{
+					"backtrace" : 2,
+					"fragment" : "/W3"
+				}
+			],
+			"includes" : 
+			[
+				{
+					"backtrace" : 3,
+					"path" : "E:/destop/project/AT24_20260311_Checkdefault/pc_radar_algo_float_v2/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "E:/destop/project/AT24_20260311_Checkdefault/pc_radar_algo_float_v2/src"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "E:/destop/project/AT24_20260311_Checkdefault/pc_radar_algo_float_v2/src/algorithm/base/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "E:/destop/project/AT24_20260311_Checkdefault/pc_radar_algo_float_v2/src/algorithm/gesture/include"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "E:/destop/project/AT24_20260311_Checkdefault/pc_radar_algo_float_v2/src/algorithm/gesture"
+				},
+				{
+					"backtrace" : 3,
+					"path" : "E:/destop/project/AT24_20260311_Checkdefault/pc_radar_algo_float_v2/src/algorithm/gesture/source"
+				}
+			],
+			"language" : "C",
+			"languageStandard" : 
+			{
+				"backtraces" : 
+				[
+					1
+				],
+				"standard" : "11"
+			},
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6
+			]
+		}
+	],
+	"dependencies" : 
+	[
+		{
+			"id" : "ZERO_CHECK::@6890427a1f51a3e7e1df"
+		}
+	],
+	"id" : "pc_radar_algo_float_v2::@6890427a1f51a3e7e1df",
+	"link" : 
+	{
+		"commandFragments" : 
+		[
+			{
+				"fragment" : "/DWIN32 /D_WINDOWS /O1 /Ob1 /DNDEBUG -MD",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "/machine:x64 /INCREMENTAL:NO /subsystem:console",
+				"role" : "flags"
+			},
+			{
+				"fragment" : "kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib",
+				"role" : "libraries"
+			}
+		],
+		"language" : "C"
+	},
+	"name" : "pc_radar_algo_float_v2",
+	"nameOnDisk" : "pc_radar_algo_float_v2.exe",
+	"paths" : 
+	{
+		"build" : ".",
+		"source" : "."
+	},
+	"sourceGroups" : 
+	[
+		{
+			"name" : "Source Files",
+			"sourceIndexes" : 
+			[
+				0,
+				1,
+				2,
+				3,
+				4,
+				5,
+				6
+			]
+		}
+	],
+	"sources" : 
+	[
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/arm_math_compat.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/main.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/pc_radar_pipeline.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/radar_hook.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/algorithm/base/source/radar_cfar.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/algorithm/base/source/radar_dbf.c",
+			"sourceGroupIndex" : 0
+		},
+		{
+			"backtrace" : 1,
+			"compileGroupIndex" : 0,
+			"path" : "src/algorithm/gesture/source/radar_svm.c",
+			"sourceGroupIndex" : 0
+		}
+	],
+	"type" : "EXECUTABLE"
+}

@@ -1,0 +1,10 @@
+^E:\DESTOP\PROJECT\AT24_20260311_CHECKDEFAULT\PC_RADAR_ALGO_FLOAT_V2\BUILD\CMAKEFILES\B56C0813EBA3FB3612898676CFB8DB55\GENERATE.STAMP.RULE
+setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SE:/destop/project/AT24_20260311_Checkdefault/pc_radar_algo_float_v2 -BE:/destop/project/AT24_20260311_Checkdefault/pc_radar_algo_float_v2/build --check-stamp-list CMakeFiles/generate.stamp.list --vs-solution-file E:/destop/project/AT24_20260311_Checkdefault/pc_radar_algo_float_v2/build/pc_radar_algo_float_v2.sln
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\build\CMakeFiles\b56c0813eba3fb3612898676cfb8db55\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{1CDA96F0-53D6-3E38-AD12-57508193CBEF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

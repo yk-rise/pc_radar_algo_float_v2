@@ -1,0 +1,34 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\src\arm_math_compat.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\src\main.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\src\pc_radar_pipeline.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\src\radar_hook.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\src\algorithm\base\source\radar_cfar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\src\algorithm\base\source\radar_dbf.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\src\algorithm\gesture\source\radar_svm.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{3F6EE891-A357-3DCB-A682-FBA25A46E736}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
