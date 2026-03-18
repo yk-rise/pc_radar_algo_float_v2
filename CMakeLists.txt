@@ -7,6 +7,7 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 
 add_executable(pc_radar_algo_float_v2
     src/arm_math_compat.c
+    src/pc_radar_debug.c
     src/main.c
     src/pc_radar_pipeline.c
     src/radar_hook.c
@@ -30,3 +31,4 @@ else()
     target_compile_options(pc_radar_algo_float_v2 PRIVATE -Wall -Wextra)
     target_link_libraries(pc_radar_algo_float_v2 PRIVATE m)
 endif()
+

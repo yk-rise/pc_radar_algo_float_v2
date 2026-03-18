@@ -4,6 +4,9 @@
     <ClCompile Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\src\arm_math_compat.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\src\pc_radar_debug.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="E:\destop\project\AT24_20260311_Checkdefault\pc_radar_algo_float_v2\src\main.c">
       <Filter>Source Files</Filter>
     </ClCompile>

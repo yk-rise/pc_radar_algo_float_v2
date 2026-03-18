@@ -16,6 +16,7 @@
  * ----------------------------------------------------------------------
  */
 #include "radar_svm.h"
+#include "pc_radar_debug.h"
 
 #if defined(CONFIG_GESTURE_ENABLE)
 #include "radar_svm_private.h"
@@ -1036,6 +1037,7 @@ static int udsf_radar_gesture_classify_base(const int dcount, const TargetPointT
 
     float feature[FEAR_EXP_NUM] = {0};
     retcode = udsf_calc_feature(&ts, feature);
+    PC_RADAR_DEBUG_FLOAT_ARRAY("Gesture Feature", feature, FEAR_EXP_NUM);
     if (retcode != RADAR_ALG_SUCCESS) {
         return retcode;
     }
@@ -1099,6 +1101,7 @@ static int udsf_radar_gesture_classify_base(const int dcount, const TargetPointT
     /* SVM鎵嬪娍璇嗗埆 */
     float decisions[GR_CLASS_NUM];
     retcode = udsf_calc_svm_scores(feature, decisions);
+    PC_RADAR_DEBUG_FLOAT_ARRAY("Gesture Decisions", decisions, GR_CLASS_NUM);
     if (retcode != RADAR_ALG_SUCCESS) {
         return retcode;
     }
@@ -2007,4 +2010,6 @@ int radar_gesture_classify(const int dcount, const TargetPointType *pts, const u
 #endif
 
 #endif
+
+
 

@@ -3,6 +3,7 @@
 #include "infohand_proto.h"
 #include "radar_algo.h"
 #include "radar_svm.h"
+#include "pc_radar_debug.h"
 
 typedef struct {
     uint32_t fhead;
@@ -238,15 +239,6 @@ cleanup:
     return status;
 }
 
-static void print_detect_results(const DetectResultType *result, int dcount)
-{
-    for (int i = 0; i < dcount; i++) {
-        printf("result[%d].range_index:%d, result[%d].velocity_index:%d, result[%d].snr:%.2f, result[%d].noise:%.2f, result[%d].amplitude:%.2f, result[%d].range_fine:%.2f, result[%d].velocity_fine:%.2f\n",
-            i, result[i].range_index, i, result[i].velocity_index, i, result[i].snr,
-            i, result[i].noise, i, result[i].amplitude, i, result[i].range_fine, i, result[i].velocity_fine);
-    }
-}
-
 int pc_radar_run_from_2dfft_file(const char *path)
 {
     radar_fftxd_type_t frame;
@@ -269,12 +261,13 @@ int pc_radar_run_from_2dfft_file(const char *path)
     dcount = radar_execute_cfar(&frame, &result);
     te = bsp_ticks();
     pr_info("radar_execute_cfar cast    : %2u ms", bsp_time_cast(te, ts));
-    print_detect_results(result, dcount);
+    PC_RADAR_DEBUG_DETECT_RESULTS(result, dcount);
 
     ts = bsp_ticks();
     dcount = radar_dbf_estimation(&frame, result, dcount, &points);
     te = bsp_ticks();
     pr_info("radar_dbf_estimation cast  : %2u ms", bsp_time_cast(te, ts));
+    PC_RADAR_DEBUG_TARGET_POINTS(points, dcount);
 
     if ((dcount > 0) && (points != NULL)) {
         radar_algo_target_hook(POINT_TYPE_CLUSTER, dcount, points, sBrightScreenThrCM);
@@ -284,6 +277,7 @@ int pc_radar_run_from_2dfft_file(const char *path)
     retcode = radar_gesture_classify(dcount, points, sGesRangeThrCM, &classify);
     te = bsp_ticks();
     pr_info("radar_gesture_classify cast: %2u ms, classify:%d", bsp_time_cast(te, ts), classify);
+    PC_RADAR_DEBUG_GESTURE_RESULT(retcode, classify);
 
     if (retcode == 0) {
         radar_algo_gesture_hook(classify);
@@ -305,3 +299,6 @@ int pc_radar_run_from_adc_file(const char *path)
     fprintf(stderr, "adc mode is reserved and not implemented yet.\n");
     return 1;
 }
+
+
+
