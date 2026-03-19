@@ -260,13 +260,13 @@ int pc_radar_run_from_2dfft_file(const char *path)
     ts = bsp_ticks();
     dcount = radar_execute_cfar(&frame, &result);
     te = bsp_ticks();
-    pr_info("radar_execute_cfar cast    : %2u ms", bsp_time_cast(te, ts));
+    // pr_info("radar_execute_cfar cast    : %2u ms", bsp_time_cast(te, ts));
     PC_RADAR_DEBUG_DETECT_RESULTS(result, dcount);
 
     ts = bsp_ticks();
     dcount = radar_dbf_estimation(&frame, result, dcount, &points);
     te = bsp_ticks();
-    pr_info("radar_dbf_estimation cast  : %2u ms", bsp_time_cast(te, ts));
+    // pr_info("radar_dbf_estimation cast  : %2u ms", bsp_time_cast(te, ts));
     PC_RADAR_DEBUG_TARGET_POINTS(points, dcount);
 
     if ((dcount > 0) && (points != NULL)) {
