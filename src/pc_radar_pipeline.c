@@ -144,15 +144,23 @@ static void parse_infohand_header(const uint8_t *p, pc_infohand_header_t *h)
     h->dbytes = read_le32(p + 20);
 }
 
-static int extract_2dfft_payload(const uint8_t *data, size_t size, uint8_t **payload, size_t *payload_size)
+typedef int (*pc_2dfft_frame_handler_t)(const radar_fftxd_type_t *frame, const pc_infohand_header_t *header, int frame_index, void *ctx);
+
+static int for_each_2dfft_frame_from_buffer(const uint8_t *data, size_t size, pc_2dfft_frame_handler_t handler, void *ctx, int *frame_count)
 {
     const size_t header_size = 24U;
     const size_t tail_size = 4U;
     const size_t expected_payload = sizeof(radar_fftxd_type_t);
+    int count = 0;
+
+    if ((data == NULL) || (handler == NULL)) {
+        return -1;
+    }
 
     for (size_t i = 0; i + header_size + tail_size <= size; ++i) {
         pc_infohand_header_t header;
         uint32_t tail;
+        radar_fftxd_type_t frame;
 
         if (read_le32(data + i) != IFPROTO_FRAME_HEAD) {
             continue;
@@ -173,75 +181,77 @@ static int extract_2dfft_payload(const uint8_t *data, size_t size, uint8_t **pay
         }
 
         if (header.dtype != 3U) {
+            i += header_size + (size_t)header.dbytes + tail_size - 1U;
             continue;
         }
 
         if ((header.santx != 2U) || (header.points != 20U) || (header.chrips != 64U)) {
+            i += header_size + (size_t)header.dbytes + tail_size - 1U;
             continue;
         }
 
         if ((size_t)header.dbytes != expected_payload) {
+            i += header_size + (size_t)header.dbytes + tail_size - 1U;
             continue;
         }
 
-        *payload = (uint8_t *)malloc(expected_payload);
-        if (*payload == NULL) {
+        memcpy(frame, data + i + header_size, expected_payload);
+        if (handler(&frame, &header, count, ctx) != 0) {
             return -1;
         }
 
-        memcpy(*payload, data + i + header_size, expected_payload);
-        *payload_size = expected_payload;
-        return 0;
+        count++;
+        i += header_size + (size_t)header.dbytes + tail_size - 1U;
     }
 
-    return -1;
+    if (frame_count != NULL) {
+        *frame_count = count;
+    }
+
+    return count > 0 ? 0 : -1;
 }
 
-static int load_2dfft_frame(const char *path, radar_fftxd_type_t *frame)
+static int for_each_2dfft_frame_from_file(const char *path, pc_2dfft_frame_handler_t handler, void *ctx, int *frame_count)
 {
     uint8_t *raw = NULL;
     uint8_t *decoded = NULL;
-    uint8_t *payload = NULL;
     size_t raw_size = 0;
     size_t decoded_size = 0;
-    size_t payload_size = 0;
     int status = -1;
 
     if (load_file_bytes(path, &raw, &raw_size) != 0) {
         return -1;
     }
 
-    if ((raw_size == sizeof(*frame)) && (raw[0] != '5')) {
-        memcpy(frame, raw, sizeof(*frame));
-        status = 0;
-        goto cleanup;
+    if ((raw_size == sizeof(radar_fftxd_type_t)) && (raw[0] != '5')) {
+        radar_fftxd_type_t frame;
+        memcpy(frame, raw, sizeof(frame));
+        status = handler(&frame, NULL, 0, ctx);
+        if ((status == 0) && (frame_count != NULL)) {
+            *frame_count = 1;
+        }
+        free(raw);
+        return status;
     }
 
     if (decode_hex_text(raw, raw_size, &decoded, &decoded_size) != 0) {
-        goto cleanup;
+        free(raw);
+        return -1;
     }
 
-    if (extract_2dfft_payload(decoded, decoded_size, &payload, &payload_size) != 0) {
-        goto cleanup;
-    }
+    status = for_each_2dfft_frame_from_buffer(decoded, decoded_size, handler, ctx, frame_count);
 
-    if (payload_size != sizeof(*frame)) {
-        goto cleanup;
-    }
-
-    memcpy(frame, payload, sizeof(*frame));
-    status = 0;
-
-cleanup:
-    free(payload);
     free(decoded);
     free(raw);
     return status;
 }
 
-int pc_radar_run_from_2dfft_file(const char *path)
+typedef struct {
+    int processed_frames;
+} pc_run_ctx_t;
+
+static int run_single_2dfft_frame(const radar_fftxd_type_t *frame, const pc_infohand_header_t *header, int frame_index, void *ctx)
 {
-    radar_fftxd_type_t frame;
     DetectResultType *result = NULL;
     TargetPointType *points = NULL;
     uint32_t ts;
@@ -251,22 +261,27 @@ int pc_radar_run_from_2dfft_file(const char *path)
     int classify = 0;
     const uint16_t sGesRangeThrCM = 15;
     const uint16_t sBrightScreenThrCM = 100;
+    pc_run_ctx_t *run_ctx = (pc_run_ctx_t *)ctx;
 
-    if (load_2dfft_frame(path, &frame) != 0) {
-        fprintf(stderr, "Failed to parse 2DFFT input: %s\n", path);
-        return 1;
+    if (header != NULL) {
+        pr_info("================ Frame %d ================", frame_index);
+        pr_info("findex:%u dtype:%u santx:%u points:%u chirps:%u bytes:%u",
+            header->findex, header->dtype, header->santx, header->points, header->chrips, header->dbytes);
+    } else {
+        pr_info("================ Frame %d ================", frame_index);
+        pr_info("raw binary 2DFFT frame");
     }
 
     ts = bsp_ticks();
-    dcount = radar_execute_cfar(&frame, &result);
+    dcount = radar_execute_cfar(frame, &result);
     te = bsp_ticks();
-    // pr_info("radar_execute_cfar cast    : %2u ms", bsp_time_cast(te, ts));
+    pr_info("radar_execute_cfar cast    : %2u ms", bsp_time_cast(te, ts));
     PC_RADAR_DEBUG_DETECT_RESULTS(result, dcount);
 
     ts = bsp_ticks();
-    dcount = radar_dbf_estimation(&frame, result, dcount, &points);
+    dcount = radar_dbf_estimation(frame, result, dcount, &points);
     te = bsp_ticks();
-    // pr_info("radar_dbf_estimation cast  : %2u ms", bsp_time_cast(te, ts));
+    pr_info("radar_dbf_estimation cast  : %2u ms", bsp_time_cast(te, ts));
     PC_RADAR_DEBUG_TARGET_POINTS(points, dcount);
 
     if ((dcount > 0) && (points != NULL)) {
@@ -283,6 +298,68 @@ int pc_radar_run_from_2dfft_file(const char *path)
         radar_algo_gesture_hook(classify);
     }
 
+    if (run_ctx != NULL) {
+        run_ctx->processed_frames++;
+    }
+
+    return 0;
+}
+
+
+int pc_radar_run_from_2dfft_frame(const radar_fftxd_type_t *frame)
+{
+    pc_run_ctx_t ctx = {0};
+
+    if (frame == NULL) {
+        fprintf(stderr, "2DFFT frame pointer is NULL.\n");
+        return 1;
+    }
+
+    if (run_single_2dfft_frame(frame, NULL, 0, &ctx) != 0) {
+        fprintf(stderr, "Failed to process 2DFFT frame.\n");
+        return 1;
+    }
+
+    pr_info("processed 2DFFT frames: %d", ctx.processed_frames);
+    return 0;
+}
+
+int pc_radar_run_from_2dfft_frames(const radar_fftxd_type_t *frames, int frame_count)
+{
+    pc_run_ctx_t ctx = {0};
+    int i;
+
+    if (frames == NULL) {
+        fprintf(stderr, "2DFFT frames pointer is NULL.\n");
+        return 1;
+    }
+
+    if (frame_count <= 0) {
+        fprintf(stderr, "2DFFT frame count must be positive.\n");
+        return 1;
+    }
+
+    for (i = 0; i < frame_count; ++i) {
+        if (run_single_2dfft_frame(&frames[i], NULL, i, &ctx) != 0) {
+            fprintf(stderr, "Failed to process 2DFFT frame index %d.\n", i);
+            return 1;
+        }
+    }
+
+    pr_info("processed 2DFFT frames: %d", ctx.processed_frames);
+    return 0;
+}
+int pc_radar_run_from_2dfft_file(const char *path)
+{
+    int frame_count = 0;
+    pc_run_ctx_t ctx = {0};
+
+    if (for_each_2dfft_frame_from_file(path, run_single_2dfft_frame, &ctx, &frame_count) != 0) {
+        fprintf(stderr, "Failed to parse any complete 2DFFT frame from: %s\n", path);
+        return 1;
+    }
+
+    pr_info("processed 2DFFT frames: %d", ctx.processed_frames);
     return 0;
 }
 
@@ -299,6 +376,8 @@ int pc_radar_run_from_adc_file(const char *path)
     fprintf(stderr, "adc mode is reserved and not implemented yet.\n");
     return 1;
 }
+
+
 
 
 
