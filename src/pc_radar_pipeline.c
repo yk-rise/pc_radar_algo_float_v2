@@ -306,6 +306,63 @@ static int run_single_2dfft_frame(const radar_fftxd_type_t *frame, const pc_info
 }
 
 
+int pc_radar_run_from_radar_mem(const int8_t *frame_bytes, size_t frame_bytes_count)
+{
+    DetectResultType *result = NULL;
+    TargetPointType *points = NULL;
+    pc_run_ctx_t ctx = {0};
+    uint32_t ts;
+    uint32_t te;
+    int dcount = 0;
+    int retcode = 0;
+    int classify = 0;
+    const uint16_t sGesRangeThrCM = 15;
+    const uint16_t sBrightScreenThrCM = 100;
+
+    if (frame_bytes == NULL) {
+        fprintf(stderr, "Radar memory frame pointer is NULL.\n");
+        return 1;
+    }
+
+    if (frame_bytes_count < sizeof(radar_fftxd_type_t)) {
+        fprintf(stderr, "Radar memory frame is too small: %zu bytes, expected at least %zu bytes.\n",
+            frame_bytes_count, sizeof(radar_fftxd_type_t));
+        return 1;
+    }
+
+    pr_info("================ Frame %d ================", 0);
+    pr_info("raw radar memory frame");
+
+    ts = bsp_ticks();
+    dcount = radar_execute_cfar(frame_bytes, &result);
+    te = bsp_ticks();
+    pr_info("radar_execute_cfar cast    : %2u ms", bsp_time_cast(te, ts));
+    PC_RADAR_DEBUG_DETECT_RESULTS(result, dcount);
+
+    ts = bsp_ticks();
+    dcount = radar_dbf_estimation(frame_bytes, result, dcount, &points);
+    te = bsp_ticks();
+    pr_info("radar_dbf_estimation cast  : %2u ms", bsp_time_cast(te, ts));
+    PC_RADAR_DEBUG_TARGET_POINTS(points, dcount);
+
+    if ((dcount > 0) && (points != NULL)) {
+        radar_algo_target_hook(POINT_TYPE_CLUSTER, dcount, points, sBrightScreenThrCM);
+    }
+
+    ts = bsp_ticks();
+    retcode = radar_gesture_classify(dcount, points, sGesRangeThrCM, &classify);
+    te = bsp_ticks();
+    pr_info("radar_gesture_classify cast: %2u ms, classify:%d", bsp_time_cast(te, ts), classify);
+    PC_RADAR_DEBUG_GESTURE_RESULT(retcode, classify);
+
+    if (retcode == 0) {
+        radar_algo_gesture_hook(classify);
+    }
+
+    ctx.processed_frames = 1;
+    pr_info("processed 2DFFT frames: %d", ctx.processed_frames);
+    return 0;
+}
 int pc_radar_run_from_2dfft_frame(const radar_fftxd_type_t *frame)
 {
     pc_run_ctx_t ctx = {0};
@@ -376,6 +433,8 @@ int pc_radar_run_from_adc_file(const char *path)
     fprintf(stderr, "adc mode is reserved and not implemented yet.\n");
     return 1;
 }
+
+
 
 
 

@@ -1,14 +1,32 @@
 #include "pc_radar_algo_float_v2.h"
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
+// 大小端转换
+#define DEMO_FRAME_SWAP_ENDIAN 0
+
+static void swap_demo_frame_endian(int8_t *frame, size_t frame_size)
+{
+    size_t i;
+
+    if ((frame == NULL) || ((frame_size & 1U) != 0U)) {
+        return;
+    }
+
+    for (i = 0; i < frame_size; i += 2U) {
+        const int8_t temp = frame[i];
+        frame[i] = frame[i + 1U];
+        frame[i + 1U] = temp;
+    }
+}
 
 /*
  * Example:
- * static radar_fftxd_type_t demo_frame = {{{{0}}}};
+ * static int8_t demo_frame[] = {{{{0}}}};
  * int ret = pc_radar_run_from_2dfft_frame(&demo_frame);
  */
-static radar_fftxd_type_t demo_frame = {
+static int8_t demo_frame[] = {
        0,    0,    0,    0,    0,    0,   -1,   -1,    0,    0,    0,    0,    0,    0,    0,    0,
       -1,   -1,    0,    0,    0,    0,    0,    0,    0,    0,   -1,   -1,   -1,   -1,    0,    0,
        0,    0,   -1,   -1,   -1,   -1,    0,    0,    0,    0,    0,    0,    0,    0,    0,    0,
@@ -2071,8 +2089,10 @@ int main(int argc, char **argv)
     }
 
     if (strcmp(argv[1], "2dfft_array") == 0) {
-        return pc_radar_run_from_2dfft_frame(&demo_frame);
-        
+#if DEMO_FRAME_SWAP_ENDIAN
+        swap_demo_frame_endian(demo_frame, sizeof(demo_frame));
+#endif
+        return pc_radar_run_from_radar_mem(demo_frame, sizeof(demo_frame));
     }
     if (strcmp(argv[1], "1dfft") == 0) {
         return pc_radar_run_from_1dfft_file(argv[2]);
@@ -2085,3 +2105,5 @@ int main(int argc, char **argv)
     fprintf(stderr, "Unsupported mode: %s\n", argv[1]);
     return 1;
 }
+
+
