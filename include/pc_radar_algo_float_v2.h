@@ -8,6 +8,7 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 
+#define PC_RADAR_PRINTF_RESULT_ENABLE 0
 typedef int16_t radar_ifadc_type_t[2][64][128];
 typedef int16_t radar_fftxd_type_t[2][20][64][2];
 

@@ -5,7 +5,8 @@
 #include <string.h>
 // 大小端转换
 #define DEMO_FRAME_SWAP_ENDIAN 0
-
+// debug
+#define DEMO_FRAME_DEBUG 0
 static void swap_demo_frame_endian(int8_t *frame, size_t frame_size)
 {
     size_t i;

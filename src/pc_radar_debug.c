@@ -73,3 +73,77 @@ void pc_radar_debug_print_float_array(const char *title, const float *values, in
         printf("[%02d] %12.6f\n", i, values[i]);
     }
 }
+
+void pc_radar_debug_print_cfar_input_i16_preview(const void *fft2d_input, int value_count)
+{
+    const int16_t *values = (const int16_t *)fft2d_input;
+    const int preview = (value_count < 16) ? value_count : 16;
+
+    pc_radar_debug_print_section("CFAR Input int16 Preview");
+    printf("value_count = %d\n", value_count);
+
+    if ((values == NULL) || (value_count <= 0)) {
+        printf("<empty>\n");
+        return;
+    }
+
+    for (int i = 0; i < preview; ++i) {
+        printf("[%02d] %6d%s", i, values[i], ((i % 8) == 7 || i == preview - 1) ? "\n" : "  ");
+    }
+}
+
+void pc_radar_debug_print_cfar_complex_preview(const char *title, const float *complex_buffer, int pair_count)
+{
+    const int preview = (pair_count < 8) ? pair_count : 8;
+
+    pc_radar_debug_print_section(title != NULL ? title : "CFAR Complex Preview");
+    printf("pair_count = %d\n", pair_count);
+
+    if ((complex_buffer == NULL) || (pair_count <= 0)) {
+        printf("<empty>\n");
+        return;
+    }
+
+    for (int i = 0; i < preview; ++i) {
+        printf("[%02d] re=%10.3f im=%10.3f\n", i, complex_buffer[i * 2 + 0], complex_buffer[i * 2 + 1]);
+    }
+}
+
+void pc_radar_debug_print_cfar_map_preview(const char *title, const float *map, int rows, int cols, int preview_rows, int preview_cols)
+{
+    const int rlim = (rows < preview_rows) ? rows : preview_rows;
+    const int clim = (cols < preview_cols) ? cols : preview_cols;
+
+    pc_radar_debug_print_section(title != NULL ? title : "CFAR Map Preview");
+    printf("rows = %d, cols = %d\n", rows, cols);
+
+    if ((map == NULL) || (rows <= 0) || (cols <= 0)) {
+        printf("<empty>\n");
+        return;
+    }
+
+    for (int r = 0; r < rlim; ++r) {
+        printf("row[%02d]", r);
+        for (int c = 0; c < clim; ++c) {
+            printf(" %10.3f", map[r * cols + c]);
+        }
+        printf("\n");
+    }
+}
+
+void pc_radar_debug_print_byte_preview(const char *title, const int8_t *values, size_t count, size_t preview_count)
+{
+    size_t preview = (count < preview_count) ? count : preview_count;
+
+    pc_radar_debug_print_section(title != NULL ? title : "Byte Preview");
+    printf("byte_count = %zu\n", count);
+
+    if ((values == NULL) || (count == 0U)) {
+        printf("<empty>\n");
+        return;
+    }
+
+    for (size_t i = 0; i < preview; ++i) {
+        printf("[%02zu] %4d%s", i, values[i], (((i % 16U) == 15U) || (i == (preview - 1U))) ? "\n" : "  ");
+    }
+}

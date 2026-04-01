@@ -249,7 +249,39 @@ static int for_each_2dfft_frame_from_file(const char *path, pc_2dfft_frame_handl
 typedef struct {
     int processed_frames;
 } pc_run_ctx_t;
+static void print_target_points(const uint8_t dtype, const int count, const TargetPointType *clusters, const uint16_t scr_rng)
+{
+    (void)dtype;
+    (void)scr_rng;
 
+    printf("=================================== %4d       ===================================\n", count);
+
+    if ((count <= 0) || (clusters == NULL)) {
+        printf("<empty>\n");
+        printf("==================================================================================\n");
+        return;
+    }
+
+    for (int i = 0; i < count; ++i) {
+        float angle = clusters[i].angle / 128.0f;
+        float range = clusters[i].range / 65536.0f;
+        float velocity = clusters[i].velocity / 65536.0f;
+        float snr = clusters[i].snr / 256.0f;
+        float powerdb = clusters[i].powerdb / 256.0f;
+        float amplitude = clusters[i].amplitude;
+
+        printf("[%02d] R:%6.2fm, A:%7.2f\xe5\xba\xa6, V:%6.2fm/s, SNR:%6.2fdB, PWR:%6.2fdB, AMP:%9.2f\n",
+               i + 1,
+               range,
+               angle,
+               velocity,
+               snr,
+               powerdb,
+               amplitude);
+    }
+
+    printf("==================================================================================\n");
+}
 static int run_single_2dfft_frame(const radar_fftxd_type_t *frame, const pc_infohand_header_t *header, int frame_index, void *ctx)
 {
     DetectResultType *result = NULL;
@@ -306,6 +338,8 @@ static int run_single_2dfft_frame(const radar_fftxd_type_t *frame, const pc_info
 }
 
 
+
+
 int pc_radar_run_from_radar_mem(const int8_t *frame_bytes, size_t frame_bytes_count)
 {
     DetectResultType *result = NULL;
@@ -330,37 +364,42 @@ int pc_radar_run_from_radar_mem(const int8_t *frame_bytes, size_t frame_bytes_co
         return 1;
     }
 
-    pr_info("================ Frame %d ================", 0);
-    pr_info("raw radar memory frame");
-
+    // pr_info("================ Frame %d ================", 0);
+    // pr_info("raw radar memory frame");
+    #if DEMO_FRAME_DEBUG
+    PC_RADAR_DEBUG_BYTE_PREVIEW("Radar Memory int8 Preview", frame_bytes, frame_bytes_count, 32);
+    #endif
     ts = bsp_ticks();
     dcount = radar_execute_cfar(frame_bytes, &result);
     te = bsp_ticks();
-    pr_info("radar_execute_cfar cast    : %2u ms", bsp_time_cast(te, ts));
+    // pr_info("radar_execute_cfar cast    : %2u ms", bsp_time_cast(te, ts));
+#if PC_RADAR_PRINTF_RESULT_ENABLE
     PC_RADAR_DEBUG_DETECT_RESULTS(result, dcount);
-
+#endif
     ts = bsp_ticks();
     dcount = radar_dbf_estimation(frame_bytes, result, dcount, &points);
     te = bsp_ticks();
-    pr_info("radar_dbf_estimation cast  : %2u ms", bsp_time_cast(te, ts));
+    // pr_info("radar_dbf_estimation cast  : %2u ms", bsp_time_cast(te, ts));
+#if PC_RADAR_PRINTF_RESULT_ENABLE
     PC_RADAR_DEBUG_TARGET_POINTS(points, dcount);
-
+#endif
     if ((dcount > 0) && (points != NULL)) {
-        radar_algo_target_hook(POINT_TYPE_CLUSTER, dcount, points, sBrightScreenThrCM);
+        print_target_points(POINT_TYPE_CLUSTER, dcount, points, sBrightScreenThrCM);
     }
 
     ts = bsp_ticks();
     retcode = radar_gesture_classify(dcount, points, sGesRangeThrCM, &classify);
     te = bsp_ticks();
-    pr_info("radar_gesture_classify cast: %2u ms, classify:%d", bsp_time_cast(te, ts), classify);
+    // pr_info("radar_gesture_classify cast: %2u ms, classify:%d", bsp_time_cast(te, ts), classify);
+#if PC_RADAR_PRINTF_RESULT_ENABLE
     PC_RADAR_DEBUG_GESTURE_RESULT(retcode, classify);
-
+#endif
     if (retcode == 0) {
         radar_algo_gesture_hook(classify);
     }
 
     ctx.processed_frames = 1;
-    pr_info("processed 2DFFT frames: %d", ctx.processed_frames);
+    // pr_info("processed 2DFFT frames: %d", ctx.processed_frames);
     return 0;
 }
 int pc_radar_run_from_2dfft_frame(const radar_fftxd_type_t *frame)
@@ -433,6 +472,7 @@ int pc_radar_run_from_adc_file(const char *path)
     fprintf(stderr, "adc mode is reserved and not implemented yet.\n");
     return 1;
 }
+
 
 
 
